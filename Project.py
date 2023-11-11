@@ -36,6 +36,7 @@ import os
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import calendar
 
 #Field Names
 fieldnames = ['Type', 'Text']
@@ -49,6 +50,31 @@ csv_filename = 'feedback_data.csv'
 conversation_csv_filename = 'conversation_data.csv'
 history_file = "calculator_history.csv"
 FILE_NAME = "tasks.csv"
+def print_calendar(year):
+    for month in range(1, 13):
+        # Display the month and year
+        print(calendar.month_name[month], year)
+        print("-----------------------------")
+        
+        # Display the calendar for the month
+        cal = calendar.monthcalendar(year, month)
+        print("Mo\tTu\tWe\tTh\tFr\tSa\tSu")
+        for week in cal:
+            for day in week:
+                if day == 0:
+                    print("\t", end="")
+                else:
+                    print(f"{day:2}", end="\t")
+            print()
+
+        print()
+def calendardate():
+    if __name__ == "__main__":
+        try:
+            year = int(input("Enter the year for the calendar: "))
+            print_calendar(year)
+        except ValueError:
+            print("Invalid input. Please enter a valid year.")
 #Function to Save Calculations of the CSV File
 def save_to_csv(operation, result):
     with open(history_file, mode="a", newline="") as file:
@@ -783,5 +809,7 @@ while True:
     elif "todo" in user_input.lower():
         print("Welcome to To-do List")
         todo()
+    elif "calendar" in user_input.lower():
+        calendardate()
     else:
         print("Eliza: " + match_response(user_input))
