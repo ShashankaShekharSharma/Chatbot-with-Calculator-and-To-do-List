@@ -58,17 +58,17 @@ def print_calendar(year):
         
         # Display the calendar for the month
         cal = calendar.monthcalendar(year, month)
-        print("Mo\tTu\tWe\tTh\tFr\tSa\tSu")
+        print("Mo Tu We Th Fr Sa Su")
         for week in cal:
             for day in week:
                 if day == 0:
-                    print("\t", end="")
+                    print("   ", end=" ")
                 else:
-                    print(f"{day:2}", end="\t")
+                    print(f"{day:2} ", end=" ")
             print()
 
         print()
-def calendardate():
+def calendar():
     if __name__ == "__main__":
         try:
             year = int(input("Enter the year for the calendar: "))
@@ -76,10 +76,14 @@ def calendardate():
         except ValueError:
             print("Invalid input. Please enter a valid year.")
 #Function to Save Calculations of the CSV File
-def save_to_csv(operation, result):
-    with open(history_file, mode="a", newline="") as file:
+def save_tasks_to_csv():
+    with open(FILE_NAME, mode='w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow([operation, result])
+        writer.writerow(['Task', 'Deadline'])
+        for task in tasks:
+            task_name = task['name']
+            task_deadline = task.get('deadline', '')  
+            writer.writerow([task_name, task_deadline])
 #Loading the csv file for Calculations
 def load_from_csv():
     if os.path.exists(history_file):
@@ -111,39 +115,41 @@ def save_tasks_to_csv():
         writer = csv.writer(file)
         writer.writerow(['Task', 'Deadline'])
         for task in tasks:
-            if 'deadline' in task:
-                writer.writerow([task['name'], task['deadline']])
-            else:
-                writer.writerow([task, ""])
+            if isinstance(task, dict):  
+                writer.writerow([task['name'], task.get('deadline', '')])
+            else:  # Task does not have a deadline
+                writer.writerow([task, '']) 
 def load_tasks_from_csv():
     create_csv_file()
-    tasks.clear()  # Clear the existing tasks before loading from CSV
+    tasks.clear()  
     with open(FILE_NAME, mode='r') as file:
         reader = csv.reader(file)
-        next(reader)  # Skip header
+        next(reader)  
         for row in reader:
-            if row[1] != "":
+            if row[1]:  
                 tasks.append({'name': row[0], 'deadline': row[1]})
-            else:
-                tasks.append({'name': row[0]})
+            else:  
+                tasks.append(row[0])  
 def show_tasks():
     if not tasks:
         print("No tasks in the to-do list.")
     else:
         print("Tasks:")
-        tasks_with_deadline = [task for task in tasks if 'deadline' in task]
-        tasks_without_deadline = [task for task in tasks if 'deadline' not in task]
+ 
+        tasks_with_deadline = [task for task in tasks if isinstance(task, dict)]
+        tasks_without_deadline = [task for task in tasks if not isinstance(task, dict)]
 
+    
         if tasks_with_deadline:
             print("\nTasks with Deadline:")
             for i, task in enumerate(sorted(tasks_with_deadline, key=lambda x: x['deadline']), start=1):
                 print(f"{i}. {task['name']} - Deadline: {task['deadline']}")
 
+        # Display tasks without deadlines
         if tasks_without_deadline:
             print("\nTasks without Deadline:")
             for i, task in enumerate(tasks_without_deadline, start=len(tasks_with_deadline) + 1):
-                print(f"{i}. {task['name']}")
-show_tasks()
+                print(f"{i}. {task}")  # Task is a string
 def add_task(task):
     has_deadline = input("Does the task have a deadline? (yes/no): ").lower()
     if has_deadline == 'yes':
@@ -810,6 +816,7 @@ while True:
         print("Welcome to To-do List")
         todo()
     elif "calendar" in user_input.lower():
-        calendardate()
+        calendar()
     else:
         print("Eliza: " + match_response(user_input))
+
