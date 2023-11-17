@@ -25,7 +25,7 @@ Developed By<br>
 Shashanka Shekhar Sharma<br>
 12.10.2023
 '''
-#Importing all Necessary Libraries
+# Importing all Necessary Libraries
 import re
 import random
 from textblob import TextBlob
@@ -38,7 +38,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import calendar
 
-#Field Names
+# Field Names
 fieldnames = ['Type', 'Text']
 tasks = []
 # Creating a list that will store the user's history
@@ -50,41 +50,45 @@ csv_filename = 'feedback_data.csv'
 conversation_csv_filename = 'conversation_data.csv'
 history_file = "calculator_history.csv"
 FILE_NAME = "tasks.csv"
+
+
+
+
 def print_calendar(year):
     for month in range(1, 13):
         # Display the month and year
         print(calendar.month_name[month], year)
         print("-----------------------------")
-        
+
         # Display the calendar for the month
         cal = calendar.monthcalendar(year, month)
         print("Mo Tu We Th Fr Sa Su")
         for week in cal:
             for day in week:
                 if day == 0:
-                    print("   ", end=" ")
+                    print("   ", end="")
                 else:
-                    print(f"{day:2} ", end=" ")
+                    print(f"{day:2} ", end="")
             print()
 
         print()
-def calendar():
+def calendars():
     if __name__ == "__main__":
         try:
             year = int(input("Enter the year for the calendar: "))
             print_calendar(year)
         except ValueError:
             print("Invalid input. Please enter a valid year.")
-#Function to Save Calculations of the CSV File
-def save_tasks_to_csv():
-    with open(FILE_NAME, mode='w', newline='') as file:
+
+
+# Function to Save Calculations of the CSV File
+def save_to_csv(operation, result):
+    with open(history_file, mode="a", newline="") as file:
         writer = csv.writer(file)
-        writer.writerow(['Task', 'Deadline'])
-        for task in tasks:
-            task_name = task['name']
-            task_deadline = task.get('deadline', '')  
-            writer.writerow([task_name, task_deadline])
-#Loading the csv file for Calculations
+        writer.writerow([operation, result])
+
+
+# Loading the csv file for Calculations
 def load_from_csv():
     if os.path.exists(history_file):
         with open(history_file, mode="r") as file:
@@ -93,10 +97,14 @@ def load_from_csv():
                 print(row)
     else:
         print("No history found.")
+
+
 # Function to get current date and time
 def get_date_and_time():
     now = datetime.datetime.now()
     return now.strftime("Current date and time: %Y-%m-%d %H:%M:%S")
+
+
 # Function to analyze sentiment
 def analyze_sentiment(text):
     analysis = TextBlob(text)
@@ -105,51 +113,61 @@ def analyze_sentiment(text):
         return "Sentiment Analysis: You seem to be feeling positive."
     elif sentiment_score <= 0:
         return "Sentiment Analysis: Let's talk more. You will feel better."
+
+
 def create_csv_file():
     if not os.path.exists(FILE_NAME):
         with open(FILE_NAME, 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(['Task', 'Deadline'])
+
+
 def save_tasks_to_csv():
     with open(FILE_NAME, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Task', 'Deadline'])
         for task in tasks:
-            if isinstance(task, dict):  
-                writer.writerow([task['name'], task.get('deadline', '')])
-            else:  # Task does not have a deadline
-                writer.writerow([task, '']) 
+            if 'deadline' in task:
+                writer.writerow([task['name'], task['deadline']])
+            else:
+                writer.writerow([task, ""])
+
+
 def load_tasks_from_csv():
     create_csv_file()
-    tasks.clear()  
+    tasks.clear()  # Clear the existing tasks before loading from CSV
     with open(FILE_NAME, mode='r') as file:
         reader = csv.reader(file)
-        next(reader)  
+        next(reader)  # Skip header
         for row in reader:
-            if row[1]:  
+            if row[1] != "":
                 tasks.append({'name': row[0], 'deadline': row[1]})
-            else:  
-                tasks.append(row[0])  
+            else:
+                tasks.append({'name': row[0]})
+
+
 def show_tasks():
     if not tasks:
         print("No tasks in the to-do list.")
     else:
         print("Tasks:")
- 
-        tasks_with_deadline = [task for task in tasks if isinstance(task, dict)]
-        tasks_without_deadline = [task for task in tasks if not isinstance(task, dict)]
+        tasks_with_deadline = [task for task in tasks if 'deadline' in task]
+        tasks_without_deadline = [task for task in tasks if 'deadline' not in task]
 
-    
         if tasks_with_deadline:
             print("\nTasks with Deadline:")
             for i, task in enumerate(sorted(tasks_with_deadline, key=lambda x: x['deadline']), start=1):
                 print(f"{i}. {task['name']} - Deadline: {task['deadline']}")
 
-        # Display tasks without deadlines
         if tasks_without_deadline:
             print("\nTasks without Deadline:")
             for i, task in enumerate(tasks_without_deadline, start=len(tasks_with_deadline) + 1):
-                print(f"{i}. {task}")  # Task is a string
+                print(f"{i}. {task['name']}")
+
+
+show_tasks()
+
+
 def add_task(task):
     has_deadline = input("Does the task have a deadline? (yes/no): ").lower()
     if has_deadline == 'yes':
@@ -158,12 +176,16 @@ def add_task(task):
     else:
         tasks.append({'name': task})
     print(f"Task '{task}' added.")
+
+
 def delete_task(task_index):
     if 1 <= task_index <= len(tasks):
         deleted_task = tasks.pop(task_index - 1)['name']
         print(f"Task '{deleted_task}' deleted.")
     else:
         print("Invalid task index.")
+
+
 def update_task(task_index):
     if 1 <= task_index <= len(tasks):
         print("1. Edit Task\n2. Edit Deadline")
@@ -181,7 +203,11 @@ def update_task(task_index):
         save_tasks_to_csv()
     else:
         print("Invalid task index.")
+
+
 load_tasks_from_csv()
+
+
 def todo():
     while True:
         print("\nMain Menu\n1. Show Tasks\n2. Add Task\n3. Delete Task\n4. Update Task\n5. Quit")
@@ -203,10 +229,12 @@ def todo():
             task_index = int(input("Enter the index of the task to update: "))
             update_task(task_index)
         elif choice == "5":
-                print("Exiting the to-do. Gooodbye!")
-                break
+            print("Exiting the to-do. Gooodbye!")
+            break
         else:
             print("Invalid choice. Please try again.")
+
+
 # Function to match user's input to a pre-defined response
 def match_response(input_text):
     for pattern, response_list in response.items():
@@ -215,9 +243,13 @@ def match_response(input_text):
             choosen_response = random.choice(response_list)
             return choosen_response.format(*matches.groups())
     return "I am sorry. I am unable to understand what you are saying."
-  #Calculator
-#Addition
+
+
+# Calculator
+# Addition
 result_flag = False
+
+
 def add_numbers(result):
     if result_flag:
         operation = str(result) + "+"
@@ -246,7 +278,9 @@ def add_numbers(result):
         save_to_csv(operation, result)
         print(f"Sum : {result}")
         return result
-#Subtraction
+
+
+# Subtraction
 def subtract_numbers(result):
     if result_flag:
         operation = str(result) + "-"
@@ -276,7 +310,9 @@ def subtract_numbers(result):
         print(f"Difference : {result}")
         save_to_csv(operation, result)
         return result
-#Multiplication
+
+
+# Multiplication
 def multiply_numbers(result):
     if result_flag:
         operation = str(result) + "*"
@@ -305,7 +341,9 @@ def multiply_numbers(result):
         print(f"Product : {result}")
         save_to_csv(operation, result)
         return result
-#Division
+
+
+# Division
 def divide_numbers(result):
     if result_flag:
         print(f"Dividing from(dividend) : {result}")
@@ -327,37 +365,41 @@ def divide_numbers(result):
         print(f"Quotient : {result}")
         save_to_csv(operation, result)
         return result
-#Quadratic Equation
+
+
+# Quadratic Equation
 def solve_quadratic_equation(result):
     print("Enter the coefficients of the quadratic equation (ax^2 + bx + c = 0):")
     a = float(input("Enter coefficient a: "))
     b = float(input("Enter coefficient b: "))
     c = float(input("Enter coefficient c: "))
     discriminant = b * b - 4 * a * c
-    operation = 'Solving the equation: '+str(a)+'x^2'+str(b)+'x+'+str(c)+'=0'
+    operation = 'Solving the equation: ' + str(a) + 'x^2' + str(b) + 'x+' + str(c) + '=0'
     if discriminant > 0:
         root1 = (-b + math.sqrt(discriminant)) / (2 * a)
         root2 = (-b - math.sqrt(discriminant)) / (2 * a)
         print(f"The roots are real and distinct: {root1} and {root2}")
-        ans=[root1,root2]
+        ans = [root1, root2]
     elif discriminant == 0:
         root1 = root2 = -b / (2 * a)
         print(f"The roots are real and equal: {root1} and {root2}")
-        ans=[root1,root2]
+        ans = [root1, root2]
     else:
         realPart = -b / (2 * a)
         imaginaryPart = math.sqrt(-discriminant) / (2 * a)
         print(f"The roots are complex and different: {realPart}+{imaginaryPart}i and {realPart}-{imaginaryPart}i")
-        ans = [str(realPart)+'i'+str(imaginaryPart)+'j',str(realPart)+'i-'+str(imaginaryPart)+'j']
+        ans = [str(realPart) + 'i' + str(imaginaryPart) + 'j', str(realPart) + 'i-' + str(imaginaryPart) + 'j']
     save_to_csv(operation, ans)
-#Cubic Function
+
+
+# Cubic Function
 def solve_cubic_equation(result):
     print("Enter the coefficients of the cubic equation (ax^3 + bx^2 + cx + d = 0):")
     a = float(input("Enter coefficient a: "))
     b = float(input("Enter coefficient b: "))
     c = float(input("Enter coefficient c: "))
     d = float(input("Enter coefficient d: "))
-    operation = 'Solving the equation: ' + str(a) + 'x^3' + str(b) + 'x^2+' + str(c)+'x+'+str(d) + '=0'
+    operation = 'Solving the equation: ' + str(a) + 'x^3' + str(b) + 'x^2+' + str(c) + 'x+' + str(d) + '=0'
     p = (3 * a * c - b ** 2) / (3 * a ** 2)
     q = (2 * b ** 3 - 9 * a * b * c + 27 * a ** 2 * d) / (27 * a ** 3)
 
@@ -371,23 +413,23 @@ def solve_cubic_equation(result):
         root2 = -b / (3 * a) + (S + T) / 2 + imaginary
         root3 = -b / (3 * a) + (S + T) / 2 - imaginary
         print(f"The complex roots are: {root2} and {root3}")
-        ans=[str(root1),str(root2)+'j'+str(root3)+'j']
-        save_to_csv(operation,ans)
+        ans = [str(root1), str(root2) + 'j' + str(root3) + 'j']
+        save_to_csv(operation, ans)
     elif discriminant == 0:
         if q < 0:
             A = (abs(q) / 2) ** (1 / 3)
             root1 = -b / (3 * a) - 2 * A
             root2 = -b / (3 * a) + A
             print(f"The real root is: {root1} and the complex root is: {root2} + {root2}i")
-            ans=[str(root1),str(root2)+'i'+str(root2)+'j']
-            save_to_csv(operation,ans)
+            ans = [str(root1), str(root2) + 'i' + str(root2) + 'j']
+            save_to_csv(operation, ans)
         else:
             A = (-q / 2) ** (1 / 3)
             root1 = -b / (3 * a) - 2 * A
             root2 = -b / (3 * a) + A
             print(f"The real root is: {root1} and the complex root is: {root2} - {root2}i")
-            ans=[str(root1),str(root2)+'i-'+str(root2)+'j']
-            save_to_csv(operation,ans)
+            ans = [str(root1), str(root2) + 'i-' + str(root2) + 'j']
+            save_to_csv(operation, ans)
     else:
         x = math.sqrt((q ** 2 / 4) - discriminant)
         θ = math.acos(-q / (2 * math.sqrt(discriminant)))
@@ -395,9 +437,11 @@ def solve_cubic_equation(result):
         root2 = 2 * math.sqrt(-p / 3) * math.cos((θ + 2 * math.pi) / 3) - b / (3 * a)
         root3 = 2 * math.sqrt(-p / 3) * math.cos((θ + 4 * math.pi) / 3) - b / (3 * a)
         print(f"The roots are: {root1}, {root2}, and {root3}")
-        ans=[root1,root2,root3]
-        save_to_csv(operation,ans)
-#Polynomial Graph
+        ans = [root1, root2, root3]
+        save_to_csv(operation, ans)
+
+
+# Polynomial Graph
 def polynomial_graph(result):
     degree = int(input("Enter the degree of the polynomial: "))
     coefficients = []
@@ -406,7 +450,7 @@ def polynomial_graph(result):
         coefficients.append(coefficient)
     y = 0
     for i in range(len(coefficients)):
-        y += coefficients[i] * x**i
+        y += coefficients[i] * x ** i
     return y
     x = np.linspace(-10, 10, 400)
     y = polynomial(x, coefficients)
@@ -418,7 +462,9 @@ def polynomial_graph(result):
     plt.legend()
     plt.grid()
     plt.show()
-#Factorial of number
+
+
+# Factorial of number
 def factorial_of_number(result):
     operation = ""
     temp = []
@@ -429,7 +475,7 @@ def factorial_of_number(result):
         fact *= i
     print(f"Factorial: {fact}")
     for i in range(len(temp)):
-        if i < (len(temp)-1):
+        if i < (len(temp) - 1):
             operation += str(temp[i])
             operation += "x"
         else:
@@ -437,39 +483,43 @@ def factorial_of_number(result):
     result = fact
     save_to_csv(operation, result)
     return result
-#Logarithm
+
+
+# Logarithm
 def log(result):
     if result_flag:
-        print("taking log of ",result)
+        print("taking log of ", result)
         num = input("Enter the base: (type 'e' for natural log)")
         num = int(num)
         if num == 'e':
             result = math.log(result)
             print(result)
         elif num > 0:
-            result = math.log(result,num)
+            result = math.log(result, num)
             print(result)
         else:
             result("invalid")
-        operation = 'log of'+str(result)+'base'+str(num)
-        save_to_csv(operation,result)
+        operation = 'log of' + str(result) + 'base' + str(num)
+        save_to_csv(operation, result)
     else:
         a = int(input("enter the number "))
         num = int(input("Enter the base "))
-        if a>0 and num>0:
-            result=math.log(a,num)
-            operation='log of '+str(a)+ 'base'+ str(num)
-            save_to_csv(operation,result)
+        if a > 0 and num > 0:
+            result = math.log(a, num)
+            operation = 'log of ' + str(a) + 'base' + str(num)
+            save_to_csv(operation, result)
             print(result)
         else:
             print("invalid")
-#Polynomial Function Plot
+
+
+# Polynomial Function Plot
 def plot_polynomial(degree, coefficients):
     # Function to evaluate the polynomial equation
     def polynomial(x, coefficients):
         y = 0
         for i in range(len(coefficients)):
-            y += coefficients[i] * x**i
+            y += coefficients[i] * x ** i
         return y
 
     # Generate x values
@@ -487,7 +537,9 @@ def plot_polynomial(degree, coefficients):
     plt.legend()
     plt.grid()
     plt.show()
-#Trigonometric Function
+
+
+# Trigonometric Function
 def trigonometric_submenu(result):
     while True:
         print("\nTrigonometric functions:")
@@ -516,85 +568,87 @@ def trigonometric_submenu(result):
         if result_flag:
             radian_val = math.radians(result)
             if choice == "1":
-                result=round(math.sin(radian_val),3)
-                operations="sine :"+str(radian_val)
+                result = round(math.sin(radian_val), 3)
+                operations = "sine :" + str(radian_val)
             elif choice == "2":
-                result=round(math.cos(radian_val),3)
-                operations="cosine : "+str(radian_val)
+                result = round(math.cos(radian_val), 3)
+                operations = "cosine : " + str(radian_val)
             elif choice == "3":
-                result=round(math.tan(radian_val),3)
-                operations="tangent : "+str(radian_val)
+                result = round(math.tan(radian_val), 3)
+                operations = "tangent : " + str(radian_val)
             elif choice == "4":
-                result=round(1/math.cos(radian_val),3)
-                operations="secant : "+str(radian_val)
+                result = round(1 / math.cos(radian_val), 3)
+                operations = "secant : " + str(radian_val)
             elif choice == "5":
-                result=round(1/math.sin(radian_val),3)
-                operations="cosecant : "+str(radian_val)
+                result = round(1 / math.sin(radian_val), 3)
+                operations = "cosecant : " + str(radian_val)
             elif choice == "6":
-                result=round(1/math.tan(radian_val),3)
-                operations="cotangent : "+str(radian_val)
+                result = round(1 / math.tan(radian_val), 3)
+                operations = "cotangent : " + str(radian_val)
             elif choice == "7":
-                result=round(math.asin(result),3)
-                operations="sine inverse : "+str(radian_val)
+                result = round(math.asin(result), 3)
+                operations = "sine inverse : " + str(radian_val)
             elif choice == "8":
-                result=round(math.acos(result),3)
-                operations="cosine inverse : "+str(radian_val)
+                result = round(math.acos(result), 3)
+                operations = "cosine inverse : " + str(radian_val)
             elif choice == "9":
-                result=round(math.atan(result),3)
-                operations="tangent inverse : "+str(radian_val)
+                result = round(math.atan(result), 3)
+                operations = "tangent inverse : " + str(radian_val)
             elif choice == "10":
-                result=round(math.asin(1/result),3)
-                operations="cosecant inverse : "+str(radian_val)
+                result = round(math.asin(1 / result), 3)
+                operations = "cosecant inverse : " + str(radian_val)
             elif choice == "11":
-                result=round(math.acos(1/result),3)
-                operations="secant inverse : "+str(radian_val)
+                result = round(math.acos(1 / result), 3)
+                operations = "secant inverse : " + str(radian_val)
             elif choice == "12":
-                result=round(math.atan(1/result),3)
-                operations="cotangent inverse : "+str(radian_val)
-            save_to_csv(operations,result)
+                result = round(math.atan(1 / result), 3)
+                operations = "cotangent inverse : " + str(radian_val)
+            save_to_csv(operations, result)
 
         else:
             deg = float(input("Enter values in degrees : "))
             radian_val = math.radians(deg)
             if choice == "1":
-                result=round(math.sin(radian_val),3)
-                operations="sine :"+str(radian_val)
+                result = round(math.sin(radian_val), 3)
+                operations = "sine :" + str(radian_val)
             elif choice == "2":
-                result=round(math.cos(radian_val),3)
-                operations="cosine : "+str(radian_val)
+                result = round(math.cos(radian_val), 3)
+                operations = "cosine : " + str(radian_val)
             elif choice == "3":
-                result=round(math.tan(radian_val),3)
-                operations="tangent : "+str(radian_val)
+                result = round(math.tan(radian_val), 3)
+                operations = "tangent : " + str(radian_val)
             elif choice == "4":
-                result=round(1/math.cos(radian_val),3)
-                operations="secant : "+str(radian_val)
+                result = round(1 / math.cos(radian_val), 3)
+                operations = "secant : " + str(radian_val)
             elif choice == "5":
-                result=round(1/math.sin(radian_val),3)
-                operations="cosecant : "+str(radian_val)
+                result = round(1 / math.sin(radian_val), 3)
+                operations = "cosecant : " + str(radian_val)
             elif choice == "6":
-                result=round(1/math.tan(radian_val),3)
-                operations="cotangent : "+str(radian_val)
+                result = round(1 / math.tan(radian_val), 3)
+                operations = "cotangent : " + str(radian_val)
             elif choice == "7":
-                result=round(math.asin(result),3)
-                operations="sine inverse : "+str(radian_val)
+                result = round(math.asin(result), 3)
+                operations = "sine inverse : " + str(radian_val)
             elif choice == "8":
-                result=round(math.acos(result),3)
-                operations="cosine inverse : "+str(radian_val)
+                result = round(math.acos(result), 3)
+                operations = "cosine inverse : " + str(radian_val)
             elif choice == "9":
-                result=round(math.atan(result),3)
-                operations="tangent inverse : "+str(radian_val)
+                result = round(math.atan(result), 3)
+                operations = "tangent inverse : " + str(radian_val)
             elif choice == "10":
-                result=round(math.asin(1/result),3)
-                operations="cosecant inverse : "+str(radian_val)
+                result = round(math.asin(1 / result), 3)
+                operations = "cosecant inverse : " + str(radian_val)
             elif choice == "11":
-                result=round(math.acos(1/result),3)
-                operations="secant inverse : "+str(radian_val)
+                result = round(math.acos(1 / result), 3)
+                operations = "secant inverse : " + str(radian_val)
             elif choice == "12":
-                result=round(math.atan(1/result),3)
-                operations="cotangent inverse : "+str(radian_val)
-            save_to_csv(operations,result)
+                result = round(math.atan(1 / result), 3)
+                operations = "cotangent inverse : " + str(radian_val)
+            save_to_csv(operations, result)
         return result
-#Function of the calculator which includes the logic
+
+
+# Function of the calculator which includes the logic
 def calculator():
     print("Hi! I can perform simple calculations. I can add, multiply, and subtract.")
     result_flag = False
@@ -646,10 +700,10 @@ def calculator():
             elif choice == "10":
                 degree = int(input("Enter the degree of the polynomial: "))
                 coefficients = []
-                for i in range(1,degree + 1):
+                for i in range(1, degree + 1):
                     coefficient = float(input(f"Enter the coefficient for x^{i}: "))
                     coefficients.append(coefficient)
-                const=int(input("Enter the value of constant term "))
+                const = int(input("Enter the value of constant term "))
                 coefficients.append(const)
                 plot_polynomial(degree, coefficients)
             elif choice == "history":
@@ -674,6 +728,8 @@ def calculator():
         if choice.lower() != "yes":
             print("Exiting the calculator. Goodbye!")
             break
+
+
 # Creating a list of predefined responses similar to that of Eliza using dictionary
 response = {
     "hello": ["Hello how can I help you"],
@@ -736,15 +792,15 @@ EEE         LL           II        ZZ    AA  AA
 EEEEEEE     LL           II       ZZ    AAAAAAAA  
 EEE         LL           II      ZZ     AA    AA
 EEEEEEE     LLLLLLLLL IIIIIIII  ZZZZZZ  AA    AA''')
-#Introduction
+# Introduction
 print("Welcome. I am Eliza. A Rogerian psychotherapist")
 print("Your prompts will be saved in order to make improvements in the code")
 print("Type Calculator to open Calculator")
 print("Type date and time to get date and time")
 print("Type bye to exit")
-#Logical Part of Eliza
-#Includes conversation counter, history note maker, sentiment analysis, feedback receiver and date and time
-#Write programmer's data to get history of chats
+# Logical Part of Eliza
+# Includes conversation counter, history note maker, sentiment analysis, feedback receiver and date and time
+# Write programmer's data to get history of chats
 conversation_counter = 0
 if not os.path.exists(csv_filename):
     with open(csv_filename, 'w', newline='') as csvfile:
@@ -762,7 +818,6 @@ while True:
     with open(conversation_csv_filename, 'a', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writerow({'Type': 'User', 'Text': user_input})
-
     # Increment the conversation counter
     conversation_counter += 1
     if conversation_counter % 5 == 0:
@@ -816,7 +871,6 @@ while True:
         print("Welcome to To-do List")
         todo()
     elif "calendar" in user_input.lower():
-        calendar()
+        calendars()
     else:
         print("Eliza: " + match_response(user_input))
-
